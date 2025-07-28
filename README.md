@@ -3,15 +3,15 @@
 ---
 
 
-# 📐 Dimensional Analysis of a Cantilever Beam under Large Deflections
+#  Dimensional Analysis of a Cantilever Beam under Large Deflections
 
-## 🔍 Overview
+##  Overview
 
 This project investigates the **nonlinear large-deflection behavior** of a cantilever beam under a **uniformly distributed load**. Traditional linear beam theory breaks down at large deflections, requiring nonlinear analysis to accurately capture beam behavior. To generalize and simplify this behavior, we use **dimensional analysis** to collapse the deflection data across a range of beam lengths (`L`), loads (`q`), and stiffness values (`EI`) into a **universal dimensionless curve**.
 
 ---
 
-## 🧠 Why Dimensional Analysis?
+##  Why Dimensional Analysis?
 
 Dimensional analysis helps reduce complex systems into simpler, scalable relationships. In this case, we aim to unify deflection data using:
 
@@ -35,15 +35,15 @@ This expression:
 
 ---
 
-## 📄 File Info
+##  File Info
 
 All code is implemented inside a single Jupyter Notebook:
 
-📁 **`Nondimensionalizing_variationOf(_q_,_L_&_EI_)(_Continuous_Load_).ipynb`**
+📁 **`Dimensional Analysis Of Cantilever Beam.ipynb`**
 
 ---
 
-## 🧰 Dependencies
+##  Dependencies
 
 Install the required packages before running:
 
@@ -55,12 +55,31 @@ pip install numpy matplotlib pandas
 
 ## 🗂️ Code Structure (7 Sections in One Notebook)
 
-### ✅ 1. Generate `q_array` (Load Array)
 
-* Create a 2D array of 40 values of uniformly distributed loads `q` for each beam length `L`.
-* The range of `q` values increases with `L`, allowing detailed exploration.
 
-### ✅ 2. Newton-Raphson Solver (`helper()` function)
+---
+
+###  1. Newton-Raphson Solver**
+
+This part of the code numerically solves the **nonlinear beam deflection equation** using the **Newton-Raphson method**:
+
+$$
+\frac{d^2v}{dx^2} \Big/ \left(1 + \left(\frac{dv}{dx}\right)^2\right)^{3/2} = \frac{M(x)}{EI}
+$$
+
+* The equation models large deflection behavior where linear assumptions no longer apply.
+* The beam is **discretized using finite differences**, and both the **residual** and **Jacobian** are computed at each iteration.
+* The Newton-Raphson loop updates the deflection profile until convergence.
+* The result is a full deflection array `v_full`, which gives deflection at every point along the beam, including the tip.
+
+This solver is used repeatedly to compute deflection for various combinations of beam length (L), load (q), and stiffness (EI).
+
+---
+
+
+
+
+###  2. Newton-Raphson Solver (`helper()` function)
 
 * Solves the **nonlinear differential equation**:
 
@@ -75,8 +94,10 @@ $$
 * Use analytical Jacobian (if available)
 * Include robust stopping conditions
 * Handle divergence gracefully
+  
+---
 
-### ✅ 3. Binary Search to Find `EI_min`
+###  3. Binary Search to Find `EI_min`
 
 * Iteratively narrows down the **minimum value of `EI`** that still allows Newton-Raphson to converge for a given `(L, q)` pair.
 * Convergence checked via helper function.
@@ -89,12 +110,16 @@ $$
 
 > **Note:** If you have already computed and saved the `EI_min` values, you do **not** need to rerun this section. Simply load your saved `EI_min` array and proceed directly to **Section 4/Code 4**.
 
-### ✅ 4. Generate `EI_array`
+---
+
+###  4. Generate `EI_array`
 
 * Once `EI_min` is found, a list of 10 stiffness values is created from `EI_min` to 2000 for each case.
 * Used to analyze how tip deflection `δ` reduces with increasing stiffness.
+  
+---
 
-### ✅ 5. Fit Scaling Law (Log-Log Regression)
+###  5. Fit Scaling Law (Log-Log Regression)
 
 * Using deflection data across all combinations, fit the relationship:
 
@@ -115,17 +140,37 @@ For N = 250, L = 1, EI is varing between final EI array (Which is generated in c
 
 These values are used in the final plots to validate scaling behavior.
 
-### ✅ 6. Log-Log Plotting (Universal Curve)
-
-* Plots dimensionless `δ/L` vs scaled load `qL³/EI` on a **log-log scale**.
-* Data from all (L, q, EI) combinations collapse beautifully into one curve.
-
-### ✅ 7. Linear Scale Plot
-
-* Same data plotted on **linear axes** to highlight behavior at low and high load regions.
-* Useful for identifying transition from linear to nonlinear regimes.
 
 ---
+
+###  6. Global Sorting of EI and Deflection for Plotting** 
+
+* After collecting deflection results (`delta_values_NR`) for each (L, q, EI) combination, all values are **flattened** and **paired** with their corresponding EI values.
+* These `(EI, δ)` pairs are then **globally sorted by EI** to prepare smooth and properly scaled plots.
+* This step ensures that combined linear and log-log plots show **clear trends without data jumps**, improving visualization and comparison across all beam cases.
+
+
+
+---
+
+###  7. Logarithmic Scale Plot**
+
+* A **log-log plot** is generated to observe the power-law relationship between normalized deflection $(\delta/L)$ and the load parameter $(qL^3/EI)$.
+* After **globally sorting** all data by EI, the plot shows a **smooth collapsed curve**, confirming that results from all (L, q, EI) combinations follow a universal scaling law.
+* Color gradients in the plot represent **different EI levels**, helping visualize how stiffness affects nonlinear deflection.
+
+---
+
+###  8. Linear Scale Plot**
+
+* A **linear plot** is also generated using the sorted data to visualize transitions from linear to nonlinear bending.
+* At **low loads**, the deflection varies almost linearly, while **at higher loads**, the curve flattens, showing physical limits of bending.
+* Colored curves (sorted by EI) make it easier to compare deflection trends and see how increasing stiffness reduces deflection at all load levels.
+
+---
+
+
+
 
 
 
@@ -136,7 +181,7 @@ We present four key plots that validate our dimensionless scaling law. Below eac
 ---
 
 ### 🔹 1. Log-Log Plot – All Data  
-![Image](https://github.com/user-attachments/assets/e397386f-f67b-4804-a9f2-9222450a67c0)
+<img width="940" height="717" alt="Image" src="https://github.com/user-attachments/assets/bda02500-cc79-4789-90e6-1fc234f29d4b" />
 
 - **What you see:** Nearly all points from tiny loads (left) up to very large loads (right) lie on a straight line in log–log space.  
 - **Slope ≈ α:** The straight‐line region (from approximately 10⁻⁴ to 10⁰ on the x‐axis) has a slope of about **1.5**, matching our fitted exponent α ≈ 1.5.  
@@ -148,20 +193,11 @@ We present four key plots that validate our dimensionless scaling law. Below eac
 
 ---
 
----
 
-### 🌈 2. Log-Log Plot – Grouped by L  
-![Image](https://github.com/user-attachments/assets/466e1706-f7fa-4ada-a66e-3c5a5d60ea6b)
-- **Grouped slopes:** Each color line overlaps the master straight‐line region, reaffirming α ≈ 1.5 across all L.  
-- **Low‐load clustering:** At the lower left, shorter beams (blue/orange/green) cluster tightly, while longer beams fan out more—showing small‐deflection linear theory works best for stiff (short) beams.  
-- **Consistency check:** The collapse is truly universal—all lengths align on the same log‐log line up to the critical dimensionless load.  
 
-**Physical takeaway:** Length only affects the transition point on the x‐axis, not the slope—confirming our scaling removes L‐dependence in the power‐law regime.
 
----
-
-### 🟢 3. Linear Plot – All Data  
-![Image](https://github.com/user-attachments/assets/4c1c5f2a-e5e0-43fd-98ba-5b358a6c48de)
+### 🔹 2. Linear Plot – All Data  
+<img width="940" height="696" alt="Image" src="https://github.com/user-attachments/assets/af1875e9-ce8b-4a00-85a8-aa0b15459753" />
 
 - **Combined view:** All points plotted together without color‐coding.  
 - **Trend:** A rapid rise in δ/L up to ~3.5, then a gentle decline—mirroring the beam going from load‐dominated bending into stiffness saturation.  
@@ -171,17 +207,8 @@ We present four key plots that validate our dimensionless scaling law. Below eac
 
 ---
 
-### 🔸 4. Linear Plot – Grouped by L  
-![Image](https://github.com/user-attachments/assets/9285816e-361c-4056-a23a-241af41a80ae)
 
-- **Color groups:** Each color is a fixed beam length (L = 1…10).  
-- **Overlap quality:** For dimensionless loads up to ~2, curves from all L values collapse almost perfectly—this confirms length‐independence once properly scaled.  
-- **High‐load spread:** Past that, longer beams (e.g. L=10 in cyan) deviate slightly earlier than shorter ones, indicating that very long, flexible beams enter extreme nonlinearity sooner.  
-- **“Knee” point:** All curves share a visible “knee” around δ/L ≈ 3.2, where deflection growth slows—this is the stiffness‐dominated regime.  
 
-**Physical takeaway:** Even though absolute deflection differs, after scaling by δ/L and (qL³/EI)^α, beam length ceases to matter—up to the stiff‐beam limit.
-
----
 
 
 
@@ -197,7 +224,7 @@ jupyter notebook Nondimensionalizing_variationOf(_q_,_L_&_EI_)(_Continuous_Load_
 > **Note:** If you have already computed and saved the `EI_min` values (from Section 3), you do **not** need to rerun Section 3 each time. Simply load your saved `EI_min` array and proceed directly to **Section 4** to build the final `EI_array`.
 ---
 
-## 🧠 Observations
+##  Observations
 
 * `α ≈ 1.1220` confirms strong geometric nonlinearity
 * `C ≈ 1.5713e-01` acts as a universal coefficient
